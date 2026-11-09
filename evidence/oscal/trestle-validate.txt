@@ -1,0 +1,3 @@
+trestle: Trestle version v5.2.0 based on OSCAL version 1.2.1
+VALID: Model C:\Users\USER\rani-cgep-app-starter\.trestle-work\component-definitions\acme-health-intake\component-definition.json passed the Validator to confirm the model passes all registered validation tests.
+VALID: Model C:\Users\USER\rani-cgep-app-starter\.trestle-work\profiles\cge-p-minimum\profile.json passed the Validator to confirm the model passes all registered validation tests.

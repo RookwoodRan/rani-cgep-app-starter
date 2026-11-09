@@ -1,0 +1,381 @@
+{
+  "component-definition": {
+    "uuid": "24985e28-fb33-4e31-aacd-6e7aa5799102",
+    "metadata": {
+      "title": "Acme Health Patient Intake API: GRC baseline",
+      "last-modified": "2026-11-09T21:27:36.000+00:00",
+      "version": "1.0.0",
+      "oscal-version": "1.2.1",
+      "remarks": "Claims are limited to the five practices listed; GAP-06 and GAP-08 from GAPS.md are not addressed."
+    },
+    "components": [
+      {
+        "uuid": "d835b273-faf6-4d4c-8b95-06481a8a2430",
+        "type": "software",
+        "title": "acme-health-intake",
+        "description": "Patient intake API on AWS (API Gateway, Lambda, DynamoDB, S3) in ca-central-1, with a Terraform GRC baseline, OPA/Rego policy gate, and a signed evidence pipeline.",
+        "purpose": "Process patient intake submissions with controls enforced as code.",
+        "props": [
+          {
+            "name": "source-repository",
+            "value": "https://github.com/RookwoodRan/rani-cgep-app-starter"
+          }
+        ],
+        "control-implementations": [
+          {
+            "uuid": "5d7983ca-6de2-4825-b6f1-0455c4fb4bcf",
+            "source": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-171/rev3/json/NIST_SP800-171_rev3_catalog.json",
+            "description": "CMMC Level 2 practices, expressed as the NIST SP 800-171 Rev 3 requirements they are drawn from.",
+            "implemented-requirements": [
+              {
+                "uuid": "afdce51d-9318-40c2-90a5-19ec0d364980",
+                "control-id": "SP_800_171_03.13.11",
+                "description": "PHI at rest is encrypted with a customer-managed KMS key with annual rotation: the S3 uploads bucket (SSE-KMS) and the DynamoDB intake table. The key is under customer control, not the AWS-owned or AWS-managed default.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "cmmc-practice",
+                    "value": "SC.L2-3.13.11"
+                  },
+                  {
+                    "name": "starter-gap",
+                    "value": "GAP-01, GAP-02"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_kms_key.phi"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:kms:ca-central-1:006419717013:key/c36812fb-183c-46da-b01f-fff32ea681e4"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_s3_bucket_server_side_encryption_configuration.uploads"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-uploads-08fa0596"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_dynamodb_table.intake"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:dynamodb:ca-central-1:006419717013:table/acme-health-intake-submissions-08fa0596"
+                  },
+                  {
+                    "name": "rego-policy",
+                    "value": "policies/sc13_11_s3_cmk.rego"
+                  },
+                  {
+                    "name": "rego-policy",
+                    "value": "policies/sc13_11_dynamodb_cmk.rego"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "rel": "evidence",
+                    "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
+                  }
+                ]
+              },
+              {
+                "uuid": "903c167a-f3f1-469a-a3c2-bbc1999886db",
+                "control-id": "SP_800_171_03.13.08",
+                "description": "Every S3 bucket carries a bucket policy that denies any request not made over TLS (aws:SecureTransport = false), protecting CUI/PHI in transit to and from storage.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "cmmc-practice",
+                    "value": "SC.L2-3.13.8"
+                  },
+                  {
+                    "name": "starter-gap",
+                    "value": "GAP-03"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_s3_bucket_policy.uploads_tls_only"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-uploads-08fa0596"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_s3_bucket_policy.evidence_tls_only"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-evidence-08fa0596"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_s3_bucket_policy.trail"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-trail-logs-08fa0596"
+                  },
+                  {
+                    "name": "rego-policy",
+                    "value": "policies/sc13_8_tls.rego"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "rel": "evidence",
+                    "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
+                  }
+                ]
+              },
+              {
+                "uuid": "5ebd03b2-b13d-4e87-9ee5-8a404d2ad658",
+                "control-id": "SP_800_171_03.08.09",
+                "description": "S3 versioning is enabled on the uploads bucket and the evidence vault so overwritten or deleted PHI is recoverable, and the stored versions are encrypted with the customer-managed key. This is a partial fit: the Rev 3 requirement is about cryptographic protection of backups, and no separate backup service is deployed.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "partial"
+                  },
+                  {
+                    "name": "cmmc-practice",
+                    "value": "MP.L2-3.8.9"
+                  },
+                  {
+                    "name": "starter-gap",
+                    "value": "GAP-04"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_s3_bucket_versioning.uploads"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-uploads-08fa0596"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_s3_bucket_versioning.evidence"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-evidence-08fa0596"
+                  },
+                  {
+                    "name": "rego-policy",
+                    "value": "policies/mp3_8_9_versioning.rego"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "rel": "evidence",
+                    "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
+                  },
+                  {
+                    "href": "#b992dfb0-8720-4fbf-a767-413960c9fddd",
+                    "rel": "evidence",
+                    "text": "Pipeline run in which a regression suspending uploads versioning was blocked by this policy."
+                  }
+                ]
+              },
+              {
+                "uuid": "d7407a47-00fe-4b8d-b37b-0fec55cd2aa2",
+                "control-id": "SP_800_171_03.13.01",
+                "description": "The intake Lambda runs inside the VPC's private subnets with a security group that has no inbound rules and only HTTPS egress to the S3 and DynamoDB gateway endpoints. There is no internet route and no NAT gateway.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "cmmc-practice",
+                    "value": "SC.L2-3.13.1"
+                  },
+                  {
+                    "name": "starter-gap",
+                    "value": "GAP-05"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_lambda_function.intake"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:lambda:ca-central-1:006419717013:function:acme-health-intake-handler-08fa0596"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_security_group.lambda"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:ec2:ca-central-1:006419717013:security-group/sg-0609394af57aabf3f"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_vpc_endpoint.s3"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:ec2:ca-central-1:006419717013:vpc-endpoint/vpce-0ffe2454854b295e5"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_vpc_endpoint.dynamodb"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:ec2:ca-central-1:006419717013:vpc-endpoint/vpce-0c03080a177cd7645"
+                  },
+                  {
+                    "name": "rego-policy",
+                    "value": "policies/sc13_1_lambda_vpc.rego"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "rel": "evidence",
+                    "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
+                  }
+                ]
+              },
+              {
+                "uuid": "85e669a0-dfe7-4f90-922d-d5944f6d5819",
+                "control-id": "SP_800_171_03.01.05",
+                "description": "The Lambda execution role is limited to dynamodb:PutItem on the intake table, s3:PutObject under uploads/, and the KMS actions needed for the data key. No service-wide wildcards.",
+                "props": [
+                  {
+                    "name": "implementation-status",
+                    "value": "implemented"
+                  },
+                  {
+                    "name": "cmmc-practice",
+                    "value": "AC.L2-3.1.5"
+                  },
+                  {
+                    "name": "starter-gap",
+                    "value": "GAP-07"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_iam_role.lambda"
+                  },
+                  {
+                    "name": "arn",
+                    "value": "arn:aws:iam::006419717013:role/acme-health-intake-lambda-08fa0596"
+                  },
+                  {
+                    "name": "terraform-address",
+                    "value": "aws_iam_role_policy.lambda_inline"
+                  },
+                  {
+                    "name": "resource-id",
+                    "value": "acme-health-intake-lambda-08fa0596:intake-data-access"
+                  },
+                  {
+                    "name": "rego-policy",
+                    "value": "policies/ac3_1_5_least_privilege.rego"
+                  }
+                ],
+                "links": [
+                  {
+                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "rel": "evidence",
+                    "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "back-matter": {
+      "resources": [
+        {
+          "uuid": "0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+          "title": "Signed pipeline evidence bundle, run 42548157532",
+          "description": "grc-gate run 42548157532 at commit 98ee40535c42f9731fe5677c7d5ca614f1763ab1: terraform plan, Conftest results, run metadata. Signed keyless with Cosign (Sigstore) and stored under Object Lock. Verify with: bash scripts/verify-evidence.sh 42548157532",
+          "props": [
+            {
+              "name": "s3-version-id",
+              "value": "kBDKRL6GWWxQjurINvwSRd2K54y9llVT"
+            },
+            {
+              "name": "github-run",
+              "value": "https://github.com/RookwoodRan/rani-cgep-app-starter/actions/runs/42548157532"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42548157532/evidence-42548157532-98ee40535c42f9731fe5677c7d5ca614f1763ab1.tar.gz",
+              "media-type": "application/gzip",
+              "hashes": [
+                {
+                  "algorithm": "SHA-256",
+                  "value": "01603d2298ded2139de5bda8cd7983281ccfa02f6e1209cb327730c10736e75b"
+                }
+              ]
+            },
+            {
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42548157532/evidence-42548157532-98ee40535c42f9731fe5677c7d5ca614f1763ab1.tar.gz.sig.bundle",
+              "media-type": "application/json"
+            },
+            {
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42548157532/receipt.json",
+              "media-type": "application/json"
+            }
+          ]
+        },
+        {
+          "uuid": "b992dfb0-8720-4fbf-a767-413960c9fddd",
+          "title": "Signed pipeline evidence bundle, run 42550227346",
+          "description": "grc-gate run 42550227346 at commit 1cc2e8a9d8b5c3c715d3b8241d3186afb97e8a17: terraform plan, Conftest results, run metadata. Signed keyless with Cosign (Sigstore) and stored under Object Lock. Verify with: bash scripts/verify-evidence.sh 42550227346",
+          "props": [
+            {
+              "name": "s3-version-id",
+              "value": "Z6UThIIgeIuI7og_rxJixAFAUNVJkx0s"
+            },
+            {
+              "name": "github-run",
+              "value": "https://github.com/RookwoodRan/rani-cgep-app-starter/actions/runs/42550227346"
+            }
+          ],
+          "rlinks": [
+            {
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42550227346/evidence-42550227346-1cc2e8a9d8b5c3c715d3b8241d3186afb97e8a17.tar.gz",
+              "media-type": "application/gzip",
+              "hashes": [
+                {
+                  "algorithm": "SHA-256",
+                  "value": "0945d6d21c563b728daa538d1642bffc5dfa6761c751f0ef809ee219c315d98c"
+                }
+              ]
+            },
+            {
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42550227346/evidence-42550227346-1cc2e8a9d8b5c3c715d3b8241d3186afb97e8a17.tar.gz.sig.bundle",
+              "media-type": "application/json"
+            },
+            {
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42550227346/receipt.json",
+              "media-type": "application/json"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
