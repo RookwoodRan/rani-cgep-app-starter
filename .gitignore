@@ -19,3 +19,4 @@ plan.json
 bootstrap/.terraform/
 bootstrap/*.tfstate
 bootstrap/*.tfstate.*
+.trestle-work/

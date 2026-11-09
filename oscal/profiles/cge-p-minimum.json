@@ -1,0 +1,30 @@
+{
+  "profile": {
+    "uuid": "4e52239f-1806-4e2d-b337-c4f8f3cf9521",
+    "metadata": {
+      "title": "CGE-P minimum control selection: CMMC Level 2 on NIST SP 800-171 Rev 3",
+      "last-modified": "2026-11-09T21:27:36.000+00:00",
+      "version": "1.0.0",
+      "oscal-version": "1.2.1"
+    },
+    "imports": [
+      {
+        "href": "https://raw.githubusercontent.com/usnistgov/oscal-content/main/nist.gov/SP800-171/rev3/json/NIST_SP800-171_rev3_catalog.json",
+        "include-controls": [
+          {
+            "with-ids": [
+              "SP_800_171_03.13.11",
+              "SP_800_171_03.13.08",
+              "SP_800_171_03.08.09",
+              "SP_800_171_03.13.01",
+              "SP_800_171_03.01.05"
+            ]
+          }
+        ]
+      }
+    ],
+    "merge": {
+      "as-is": true
+    }
+  }
+}
