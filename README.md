@@ -1,80 +1,76 @@
-# cgep-app-starter
+# Acme Health: continuous compliance pipeline (CGE-P capstone)
 
-> Patient Intake API for "Acme Health". The deliberately-flawed workload your **CGE-P capstone** wraps with GRC controls.
-
-## What this is
-
-A minimal AWS workload: VPC, Lambda, API Gateway, DynamoDB, S3. It ingests patient intake submissions over HTTPS. Think of it as a system you have just inherited from an engineering team and been asked to make audit-defensible.
-
-This repository ships **non-compliant on purpose**. Your job in the capstone is not to rewrite this app. Your job is to wrap it with the four CGE-P layers (Terraform GRC baseline, Rego policies, GitHub Actions evidence pipeline, OSCAL component) so the same workload becomes audit-defensible against HIPAA, SOC 2, and CMMC L2.
-
-## The deploy gate
-
-If you cannot deploy this starter, you cannot pass the capstone. Real GRC engineers inherit working systems. Step zero is making the system run.
-
-```bash
-git clone https://github.com/GRCEngClub/cgep-app-starter
-cd cgep-app-starter
-
-# Confirm you're authenticated to the right account:
-make creds AWS_PROFILE=<your-sandbox-profile>
-
-make deploy AWS_PROFILE=<your-sandbox-profile>
-make test    AWS_PROFILE=<your-sandbox-profile>
-```
-
-> **AWS SSO note:** if your profile is SSO-based, Terraform's AWS provider can fail to read it directly with `failed to find SSO session section`. The Makefile's `eval $(aws configure export-credentials)` pattern handles this. If you're running `terraform` commands by hand, do the same export first.
-
-Expected output of `make test`:
-
-```json
-{
-    "submission_id": "f1e3...",
-    "status": "received"
-}
-```
-
-When you're done exploring: `make destroy`.
-
-## What you build on top
-
-Fork the repo into your own `cgep-capstone` and add:
-
-1. **Layer 1 — GRC baseline (Terraform).** KMS keys, an S3 evidence vault with Object Lock, a CloudTrail trail. Bring this starter's data stores under your CMK.
-2. **Layer 2 — OPA policy suite (Rego).** Five or more policies that catch the named gaps in [GAPS.md](GAPS.md). Each policy maps to at least one control from the framework you choose.
-3. **Layer 3 — GitHub Actions pipeline.** Plan → Conftest gate → apply → Cosign sign → upload to vault.
-4. **Layer 4 — OSCAL component.** A `component-definition.json` describing how your governed system implements its controls.
-
-Full brief: `docs/labs/07_01_capstone_brief.md` in the course content repo.
-
-## Framework mapping is required
-
-Your capstone must declare a primary framework: **HIPAA Security Rule**, **SOC 2 Trust Services Criteria**, or **CMMC Level 2**. Every policy carries at least one control ID from your chosen framework. Your OSCAL component's `control-implementations` reference your framework's catalog.
-
-A starter mapping is in [FRAMEWORKS.md](FRAMEWORKS.md). It is not the only valid mapping. You're expected to defend yours.
-
-## Cost
-
-Roughly $0 if destroyed within an hour. Lambda + API Gateway + DynamoDB + S3 are all pay-per-use, and an empty deployment generates no traffic. CloudTrail (which you add) costs cents.
+Fork of `GRCEngClub/cgep-app-starter`. The Patient Intake API from the starter is still here and runnable; this repo adds a Terraform GRC baseline, six OPA/Rego policies, a GitHub Actions pipeline that gates, applies, signs and stores evidence, and an OSCAL package. Framework: **CMMC Level 2 (NIST SP 800-171)**. Reasoning, trade-offs and gaps are in [WRITEUP.md](WRITEUP.md).
 
 ## Layout
 
+| Path | What it is |
+|---|---|
+| `terraform/` | Starter stack plus the baseline: KMS keys, Object Lock evidence vault, CloudTrail, gap fixes |
+| `bootstrap/` | One-time setup: state bucket, GitHub OIDC, plan and apply roles |
+| `policies/` | Six Rego policies, shared helper, and tests (`policies/tests/`) |
+| `scripts/` | `policy-gate.sh`, `verify-evidence.sh`, `build_oscal.py`, `validate-oscal.sh` |
+| `.github/workflows/grc-gate.yml` | The pipeline |
+| `oscal/` | Component definition and profile |
+| `evidence/verification/` | A copy of one signed run, for offline verification |
+
+## Running the workload
+
+The Patient Intake API itself is unchanged from the starter (see [WORKLOAD.md](WORKLOAD.md) and [GAPS.md](GAPS.md)). Deploy and smoke-test it with:
+
 ```
-cgep-app-starter/
-├── README.md            # this file
-├── WORKLOAD.md          # what the API does
-├── GAPS.md              # the named flaws your policies must catch
-├── FRAMEWORKS.md        # HIPAA / SOC 2 / CMMC mapping primer
-├── Makefile             # make deploy | test | destroy
-├── terraform/
-│   ├── main.tf
-│   ├── variables.tf
-│   ├── outputs.tf
-│   └── lambda/handler.py
-└── test/
-    └── intake.sh
+make creds  AWS_PROFILE=<your-sandbox-profile>
+make deploy AWS_PROFILE=<your-sandbox-profile>
+make test   AWS_PROFILE=<your-sandbox-profile>
 ```
 
-## License
+The expected `make test` response is `{"submission_id": "...", "status": "received"}`. The pipeline deploys this stack from `main`, so a grader does not need to deploy anything to check the evidence below.
 
-MIT. Fork freely. Submissions remain learners' own work.
+## How to verify
+
+**1. Policies and tests** (35 tests, 6 policies; needs [conftest](https://www.conftest.dev/) or [opa](https://www.openpolicyagent.org/)):
+
+```
+conftest verify --policy policies
+opa test ./policies
+```
+
+**2. Green and red pull requests.** PR #1 passed the gate and merged; PR #2 was blocked by the gate (`[MP.L2-3.8.9]`, GAP-04 reintroduced) and is left open on purpose. The `main` branch ruleset requires the `grc-gate` check.
+
+**3. Signed evidence, offline.** The bundle for the run that did a real apply (`42706911885`) is committed. You need [cosign](https://github.com/sigstore/cosign) v2.x and no AWS access:
+
+```
+cd evidence/verification/run-42706911885
+echo "$(cat evidence-42706911885-*.tar.gz.sha256)  $(ls evidence-42706911885-*.tar.gz)" | sha256sum -c -
+cosign verify-blob \
+  --bundle evidence-42706911885-*.tar.gz.sig.bundle \
+  --certificate-identity-regexp '^https://github.com/RookwoodRan/rani-cgep-app-starter/.github/workflows/grc-gate.yml@refs/heads/main$' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  evidence-42706911885-*.tar.gz
+```
+
+The first command prints `OK`; the second prints `Verified OK` (signature, Fulcio certificate and Rekor entry).
+
+**4. Full chain of custody, with vault access.** The vault is private. With read access to it, the script also checks that Object Lock retention is still active (it runs until 2026-12-09 for this run) and prints `CHAIN INTACT`:
+
+```
+bash scripts/verify-evidence.sh 42706911885
+```
+
+Other runs: `42547179941` (green PR), `42550227346` (red PR, blocked), `42548157532` (first merge).
+
+**5. OSCAL.** The component's `control-implementation.source` is the NIST SP 800-171 Rev 3 OSCAL catalog.
+
+```
+bash scripts/validate-oscal.sh          # trestle validate: both files should print VALID
+python scripts/build_oscal.py --check   # needs vault access: every evidence link resolves and hashes match
+```
+
+**6. Reintroduce a gap and watch the gate fire.** In `terraform/hardening.tf`, change versioning `status` from `"Enabled"` to `"Suspended"`, then:
+
+```
+cd terraform && terraform plan -out=tfplan && cd ..
+bash scripts/policy-gate.sh --workspace terraform
+```
+
+Expected: `policy-gate: FAIL` with `[MP.L2-3.8.9] aws_s3_bucket.uploads must have versioning enabled…`. Revert the change afterwards. (This needs AWS credentials for the plan; PR #2 shows the same result in CI.)

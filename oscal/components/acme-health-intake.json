@@ -3,7 +3,7 @@
     "uuid": "24985e28-fb33-4e31-aacd-6e7aa5799102",
     "metadata": {
       "title": "Acme Health Patient Intake API: GRC baseline",
-      "last-modified": "2026-11-09T21:27:36.000+00:00",
+      "last-modified": "2026-11-09T22:49:45.000+00:00",
       "version": "1.0.0",
       "oscal-version": "1.2.1",
       "remarks": "Claims are limited to the five practices listed; GAP-06 and GAP-08 from GAPS.md are not addressed."
@@ -79,7 +79,7 @@
                 ],
                 "links": [
                   {
-                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "href": "#e3ad0671-08b7-4270-b6f7-370cb42997ab",
                     "rel": "evidence",
                     "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
                   }
@@ -133,7 +133,7 @@
                 ],
                 "links": [
                   {
-                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "href": "#e3ad0671-08b7-4270-b6f7-370cb42997ab",
                     "rel": "evidence",
                     "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
                   }
@@ -179,7 +179,7 @@
                 ],
                 "links": [
                   {
-                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "href": "#e3ad0671-08b7-4270-b6f7-370cb42997ab",
                     "rel": "evidence",
                     "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
                   },
@@ -246,7 +246,7 @@
                 ],
                 "links": [
                   {
-                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "href": "#e3ad0671-08b7-4270-b6f7-370cb42997ab",
                     "rel": "evidence",
                     "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
                   }
@@ -292,7 +292,7 @@
                 ],
                 "links": [
                   {
-                    "href": "#0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
+                    "href": "#e3ad0671-08b7-4270-b6f7-370cb42997ab",
                     "rel": "evidence",
                     "text": "Signed pipeline evidence: terraform plan and policy-gate results from the merge to main."
                   }
@@ -306,36 +306,36 @@
     "back-matter": {
       "resources": [
         {
-          "uuid": "0c28cfa1-1214-428f-bed6-2c0f65eec9f9",
-          "title": "Signed pipeline evidence bundle, run 42548157532",
-          "description": "grc-gate run 42548157532 at commit 98ee40535c42f9731fe5677c7d5ca614f1763ab1: terraform plan, Conftest results, run metadata. Signed keyless with Cosign (Sigstore) and stored under Object Lock. Verify with: bash scripts/verify-evidence.sh 42548157532",
+          "uuid": "e3ad0671-08b7-4270-b6f7-370cb42997ab",
+          "title": "Signed pipeline evidence bundle, run 42706911885",
+          "description": "grc-gate run 42706911885 at commit 29b58a8df0810efaa262bb1799fc90f4b7f8862b: terraform plan, Conftest results, run metadata. Signed keyless with Cosign (Sigstore) and stored under Object Lock. Verify with: bash scripts/verify-evidence.sh 42706911885",
           "props": [
             {
               "name": "s3-version-id",
-              "value": "kBDKRL6GWWxQjurINvwSRd2K54y9llVT"
+              "value": "9laQ2zsgcNbTS1OOlGcdGJHH_lxQZYO_"
             },
             {
               "name": "github-run",
-              "value": "https://github.com/RookwoodRan/rani-cgep-app-starter/actions/runs/42548157532"
+              "value": "https://github.com/RookwoodRan/rani-cgep-app-starter/actions/runs/42706911885"
             }
           ],
           "rlinks": [
             {
-              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42548157532/evidence-42548157532-98ee40535c42f9731fe5677c7d5ca614f1763ab1.tar.gz",
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42706911885/evidence-42706911885-29b58a8df0810efaa262bb1799fc90f4b7f8862b.tar.gz",
               "media-type": "application/gzip",
               "hashes": [
                 {
                   "algorithm": "SHA-256",
-                  "value": "01603d2298ded2139de5bda8cd7983281ccfa02f6e1209cb327730c10736e75b"
+                  "value": "421f42fb1f5d26768ea42bfd5253ff6f56d406226468a51eaff50a7ac6fb43da"
                 }
               ]
             },
             {
-              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42548157532/evidence-42548157532-98ee40535c42f9731fe5677c7d5ca614f1763ab1.tar.gz.sig.bundle",
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42706911885/evidence-42706911885-29b58a8df0810efaa262bb1799fc90f4b7f8862b.tar.gz.sig.bundle",
               "media-type": "application/json"
             },
             {
-              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42548157532/receipt.json",
+              "href": "s3://acme-health-intake-evidence-08fa0596/runs/42706911885/receipt.json",
               "media-type": "application/json"
             }
           ]
